@@ -281,7 +281,7 @@ def default_writers(output_dir: str, max_iter: Optional[int] = None):
     ]
 
 
-class DefaultPredictor:
+class DefaultPredictor(torch.nn.Module):
     """
     Create a simple end-to-end predictor with the given config that runs on
     single device for a single input image.
@@ -310,6 +310,7 @@ class DefaultPredictor:
     """
 
     def __init__(self, cfg):
+        super().__init__()
         self.cfg = cfg.clone()  # cfg can be modified by model
         self.model = build_model(self.cfg)
         self.model.eval()
@@ -548,6 +549,11 @@ class DefaultTrainer(TrainerBase):
         Overwrite it if you'd like a different model.
         """
         model = build_model(cfg)
+        logger = logging.getLogger(__name__)
+        for name, param in model.backbone.named_parameters():
+            print(name, param.requires_grad)
+            logger.info(f"Parameter: {name}, requires_grad: {param.requires_grad}")
+            
         logger = logging.getLogger(__name__)
         logger.info("Model:\n{}".format(model))
         return model
